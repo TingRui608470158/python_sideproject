@@ -1,4 +1,4 @@
-#記得在 python_sideproject 下執行 python .\test1_openimage\openimage.py
+#記得在 python_sideproject 下執行$  python .\test1_openimage\openimage.py
 #Class img功能:定義一個影像及相關操作(讀取，顯示，縮放)
 import numpy as np
 import cv2
@@ -13,18 +13,18 @@ class single_img:
     def show(self,windows_namw):        # 顯示
         cv2.imshow(windows_namw, self.src)
         cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.destroyAllWindows()
 
     def resize(self,wh_size):           # 縮放
         self.src = cv2.resize(self.src, wh_size)
     
     def xflip(self):                    # x軸翻轉
         self.src =cv2.flip(self.src, 1)
-    
+
     def yflip(self):                    # y軸翻轉
         self.src =cv2.flip(self.src, 0)
     
-    def makehist(self,show):            # 直方圖均衡(增強對比度)
+    def HistEqual(self,show):            # 直方圖均衡(增強對比度)
         # calculate histogram
         hist=[]
         for c in range(3):
@@ -34,7 +34,24 @@ class single_img:
             for i in range(len(hist)):
                 plt.plot(hist[i], color=color[i])
             plt.show()
-        return(hist)
+
+        #計算pdf
+        merge_img = []
+        for c, channel_img in enumerate(cv2.split(self.src)):
+            # print(channel_img.size)
+            pdf = hist[c]/channel_img.size
+            cdf = pdf.cumsum()
+            # if show :   #是否要顯示直方圖           
+            #         plt.plot(cdf[c], color=color[i])
+            # plt.show()
+            equ_value = np.around(cdf * 255).astype('uint8')
+            result = equ_value[channel_img]
+            merge_img.append(result)
+            # print(pdf)
+        cv2.imshow("HistEqual",cv2.merge(merge_img))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        return(cv2.merge(merge_img))
 
 
 
@@ -53,10 +70,11 @@ if __name__ == '__main__':
     my_img = single_img(args.image_path)
     my_img.resize((240,240))
     # my_img.xflip()
-    # my_img.show("mywindows")
+    my_img.show("mywindows")
     # my_img.yflip()
     # my_img.show("mywindows")
-    hist = my_img.makehist(True)
+    histeq = my_img.HistEqual(False)
+
     
     
     ############################################################
