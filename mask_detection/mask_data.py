@@ -1,11 +1,13 @@
 #  python .\mask_detection\mask_data.py
-#  只要呼叫 parse_dataset("$data路徑")
 import os
 import numpy as np
 import cv2
+from PIL import Image
 import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from torch.utils.data import Dataset
+
 
 class annotation:
     def __init__(self,file_path):     
@@ -15,6 +17,7 @@ class annotation:
         self.filename = self.ETobject[1].text
         self.width =   self.ETobject[2][0].text
         self.height =   self.ETobject[2][1].text
+
         self.single_objects = []
         for n in  self.ETobject.iter('object'):
             self.class_name = n[0].text 
@@ -24,14 +27,40 @@ class annotation:
             self.ymax =   n[5][3].text 
             self.single_objects.append([self.class_name,self.xmin,self.ymin, self.xmax, self.ymax])
 
+
 class parse_dataset:
     def __init__(self,src_path):     
-        self.dir_path = Path(src_path.image_path)/"annotations"
-        self.all_object = []
-        for dirname in os.listdir(self.dir_path):    
-            file_name = self.dir_path/dirname
-            single_annotation = annotation(file_name)
-            self.all_object.append(single_annotation.single_objects)
+        annotation_path = Path(src_path.image_path)/"annotations"
+        image_path = Path(src_path.image_path)/"images"
+        self.annotation_object = []
+        self.annotation_names = []
+        self.image_names = []
+
+        for dirname in os.listdir(annotation_path):    #annotations
+            annotation_name = annotation_path/dirname
+            self.annotation_names.append(annotation_name)
+            single_annotation = annotation(annotation_name)
+            self.annotation_object.append(single_annotation.single_objects)
+        
+        for dirname in os.listdir(image_path):    #annotations
+            image_name = image_path/dirname
+            self.image_names.append(str(image_name))
+
+
+class MaskDataset(Dataset):
+    def __init__(self,arg):
+        self.all_data = parse_dataset(arg)
+        self.im_path =  self.all_data.image_names
+        self.im_label =  self.all_data.annotation_object
+        
+    def __getitem__(self, index):
+        self.img = cv2.imread(str(self.im_path[index]))
+        self.img = cv2.resize(self.img, (480,480))
+        return self.img
+
+    def __len__(self):     
+        return len(self.im_path)
+
 
 if __name__ == '__main__':
     ## 輸入參數
@@ -39,8 +68,11 @@ if __name__ == '__main__':
     parser.add_argument('--image_path', type=str, default="./data/mask", help="image path")
     args = parser.parse_args()
 
-    dataset = parse_dataset(args)
-    print(dataset.all_object[0])
+    dataset = MaskDataset(args)
+    a = dataset.__getitem__(0)
+    cv2.imshow("aa",a)
+    cv2.waitKey(0)
+    # print(dataset.all_object[0])
 
                 
         
