@@ -1,4 +1,5 @@
-#  python .\mask_detection\mask_detect.py
+#  python .\mask_detection\mask_data.py
+#  只要呼叫 parse_dataset("$data路徑")
 import os
 import numpy as np
 import cv2
@@ -39,7 +40,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset = parse_dataset(args)
-    
     print(dataset.all_object[0])
 
                 
