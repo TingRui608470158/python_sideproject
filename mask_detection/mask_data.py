@@ -6,7 +6,7 @@ from PIL import Image
 import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset,DataLoader
 
 
 class annotation:
@@ -69,10 +69,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dataset = MaskDataset(args)
-    a = dataset.__getitem__(0)
-    cv2.imshow("aa",a)
-    cv2.waitKey(0)
-    # print(dataset.all_object[0])
+    dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
+    dataiter = iter(dataloader)
+    data = dataiter.next()
+    print(data.shape)
+
 
                 
         
