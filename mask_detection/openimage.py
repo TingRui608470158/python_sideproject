@@ -7,10 +7,10 @@ import argparse
 
 #使用時注意，定義物件時就代表已將img讀取至class裡，function裡的功能做都只對這個img做
 class single_img:
-    def __init__(self, src_path):        # 將影像讀取至這個物件
+    def __init__(self,src_path):        # 將影像讀取至這個物件
         self.src = cv2.imread(src_path)
 
-    def show(self, windows_name="test"):        # 顯示
+    def show(self,windows_name="test"):        # 顯示
         cv2.imshow(windows_name, self.src)
         cv2.waitKey(0)
         # cv2.destroyAllWindows()
