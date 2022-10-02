@@ -73,16 +73,17 @@ class parse_dataset:        #解析資料集
 
 
 class MaskDataset(Dataset):
-    def __init__(self, arg, image_size=(512,512), task="classify"):
+    def __init__(self, arg, image_size=(224,224), task="classify"):
         all_data = parse_dataset(arg, task)
         self.im_path =  all_data.image_names        #所有路徑
         self.im_label =  all_data.annotation_object #所有註解
         self.image_size = image_size
         
     def __getitem__(self, index):
-        self.img = cv2.imread(str(self.im_path[index]))
+        self.img = cv2.imread(str(self.im_path[index]),cv2.IMREAD_GRAYSCALE)
         self.img = cv2.resize(self.img, self.image_size)
-        return self.img
+        # self.img = Image.open(str(self.im_path[index])).convert('RGB')
+        return self.img, max(self.im_label[index])
 
     def __len__(self):     
         return len(self.im_path)
@@ -97,12 +98,12 @@ if __name__ == '__main__':
     dataset = MaskDataset(args)
     #Get image
     dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
-    dataiter = iter(dataloader)
+    dataiter,label = iter(dataloader)
     data = dataiter.next()
     # print(data.shape)
 
     #Get annotation
-    print(dataset.im_label) #第1張圖的第1個註解的第一個數值，也就是class
+    print(dataset.im_label,label) #第1張圖的第1個註解的第一個數值，也就是class
 
 
 

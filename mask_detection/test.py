@@ -1,35 +1,74 @@
-
 #Fisrt do the classification task
-import os
+#想先訓練一張圖有口罩或沒有口罩
+import os 
+import time
 import numpy as np
 import cv2
 import argparse
 import torch
 import torchvision.models as models
+import torch.nn as nn
 from mask_data import MaskDataset
 from openimage import single_img
+from torch.utils.data import Dataset,DataLoader
+
 
 
 if __name__ == '__main__':
     print("Training start")
     print("Torch version:",torch.__version__)
+    ## cuda
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
     ## 輸入參數
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str, default="./data/mask", help="image path")
     args = parser.parse_args()
     
     ##模型
-    model = models.vgg16(pretrained=True)
+    model = models.vgg16(pretrained=True).to(device)
+    model.classifier[6].out_features = 3
     print(model)
     print(model._modules.keys())
 
+    ## 優化器
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+
+    ## loss
+    criterion = nn.CrossEntropyLoss().cuda()
+
     # 讀取資料集
     dataset = MaskDataset(args)
-    for i, path in enumerate(dataset.im_path):
-        one_image = single_img(path)
-        one_image.show()
-        print(dataset.im_path[i])
-        print(dataset.im_label[i])
+    
+    # for i, path in enumerate(dataset.im_path):
+    #     one_image = single_img(path)
+    #     # one_image.show()
+    #     print(dataset.im_path[i])
+    #     print(max(dataset.im_label[i]))
+    
+    dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
+    # dataiter = iter(dataloader)
+    # data = dataiter.next()
+    #訓練
+    model.train()
+    for epoch in range(1):
+        batch_size_start = time.time()
+        running_loss = 0.0
+        for i, (inputs, labels) in enumerate(dataloader):
+            # inputs = torch.unsqueeze(inputs,dim = 0)
+            print(i,inputs.shape)
+            optimizer.zero_grad()
+            
+        
+            outputs = model(inputs.to(device))
+
+            loss = criterion(outputs, labels)        #交叉熵
+            loss.backward()
+            optimizer.step()                          #更新權重
+            running_loss += loss.data[0]
+
+        # print('Epoch [%d/%d], Loss: %.4f,need time %.4f'
+        #         % (epoch + 1, num_epochs, running_loss / (4000 / batch_size), time.time() - batch_size_start))
 
 
                 
