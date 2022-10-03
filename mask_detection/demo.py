@@ -9,6 +9,9 @@ import torch
 import torchvision.models as models
 import torch.nn as nn
 from torch.autograd import Variable
+from mask_data import parse_dataset
+from pathlib import Path
+
 
 
 if __name__ == '__main__':
@@ -19,9 +22,10 @@ if __name__ == '__main__':
 
     ## 輸入參數
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_path', type=str, default="./data/dog.jpg", help="image path")
+    parser.add_argument('--image_path', type=str, default="./data/mask", help="image path")
     parser.add_argument('--model_path', type=str, default="./net.pth", help="model path")
     args = parser.parse_args()
+    print(args.image_path)
     
     ##模型
     model = models.vgg16(pretrained=True).to(device)
@@ -36,16 +40,29 @@ if __name__ == '__main__':
     print(model)
     print("load model success")
 
+    #資料集
+    dataset = parse_dataset(args,"classify")
+    # print(dataset.image_names)
+    # print(dataset.annotation_object)
+
     #推論
-    image = cv2.imread(args.image_path)
-    origin_image = cv2.resize(image,(224,224))
-    image = torch.from_numpy(origin_image.transpose((2, 0, 1)))
-    image = image.float().to(device)
-    image = torch.unsqueeze(image,dim = 0)
-    output = model(image)
-    print(output[:,0:3])
-    cv2.imshow("demo",origin_image)
-    cv2.waitKey(0)
+    for i,image_path in enumerate(dataset.image_names):
+        image = cv2.imread(image_path)
+        origin_image = cv2.resize(image,(224,224))
+        image = torch.from_numpy(origin_image.transpose((2, 0, 1)))
+        image = image.float().to(device)
+        image = torch.unsqueeze(image,dim = 0)
+        output = model(image)
+        print("Target is ",max(dataset.annotation_object[i]))
+        print(output[:,0:3])
+        
+        #對三個輸出做判斷
+        print(torch.max(output[:,0:3], dim = 1))
+
+        #顯示
+        cv2.imshow("demo",origin_image)
+        cv2.waitKey(0)
+ 
 
 
 
