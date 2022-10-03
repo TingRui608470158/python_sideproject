@@ -1705,3 +1705,6 @@ data/mask/annotations/maksssksksss101.xml
 data/mask/annotations/maksssksksss100.xml
 data/mask/annotations/maksssksksss10.xml
 data/mask/annotations/maksssksksss1.xml
+mask_detection/__pycache__/mask_data.cpython-310.pyc
+net.pth
+mask_detection/__pycache__/openimage.cpython-310.pyc
