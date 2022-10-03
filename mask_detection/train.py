@@ -9,9 +9,8 @@ import torch
 import torchvision.models as models
 import torch.nn as nn
 from mask_data import MaskDataset
-from openimage import single_img
 from torch.utils.data import Dataset,DataLoader
-
+from torch.autograd import Variable
 
 
 if __name__ == '__main__':
@@ -45,31 +44,34 @@ if __name__ == '__main__':
     #     # one_image.show()
     #     print(dataset.im_path[i])
     #     print(max(dataset.im_label[i]))
-    
-    dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True)
+    batch_size = 8
+    dataloader = DataLoader(dataset=dataset, batch_size= batch_size, shuffle=True)
     # dataiter = iter(dataloader)
     # data = dataiter.next()
     #訓練
     model.train()
-    for epoch in range(1):
+    num_epochs = 10
+    for epoch in range(num_epochs):
         batch_size_start = time.time()
         running_loss = 0.0
         for i, (inputs, labels) in enumerate(dataloader):
+            inputs = Variable(inputs.float()).cuda()
+            labels = Variable(labels).cuda()
+            inputs = inputs.permute(0, 3, 2, 1)
             # inputs = torch.unsqueeze(inputs,dim = 0)
-            print(i,inputs.shape)
+            # print(i,inputs.shape)
             optimizer.zero_grad()
             
-        
-            outputs = model(inputs.to(device))
+            outputs = model((inputs).to(device))
 
             loss = criterion(outputs, labels)        #交叉熵
             loss.backward()
             optimizer.step()                          #更新權重
-            running_loss += loss.data[0]
-
-        # print('Epoch [%d/%d], Loss: %.4f,need time %.4f'
-        #         % (epoch + 1, num_epochs, running_loss / (4000 / batch_size), time.time() - batch_size_start))
-
+            running_loss += loss.item()
+    
+        print('Epoch [%d/%d], Loss: %.4f,need time %.4f'
+                % (epoch + 1, num_epochs, running_loss / (4000 / batch_size), time.time() - batch_size_start))
+    torch.save(model, 'net.pth')  # 保存整個神經網絡的模型結構以及參數
 
                 
         

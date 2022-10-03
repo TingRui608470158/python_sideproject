@@ -80,7 +80,7 @@ class MaskDataset(Dataset):
         self.image_size = image_size
         
     def __getitem__(self, index):
-        self.img = cv2.imread(str(self.im_path[index]),cv2.IMREAD_GRAYSCALE)
+        self.img = cv2.imread(str(self.im_path[index]))
         self.img = cv2.resize(self.img, self.image_size)
         # self.img = Image.open(str(self.im_path[index])).convert('RGB')
         return self.img, max(self.im_label[index])
