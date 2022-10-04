@@ -11740,3 +11740,4 @@ data/catdog/test_set/test_set/cats/cat.4003.jpg
 data/catdog/test_set/test_set/cats/cat.4002.jpg
 data/catdog/test_set/test_set/cats/cat.4001.jpg
 data/catdog/test_set/test_set/cats/_DS_Store
+mask_detection/__pycache__/mask_data.cpython-37.pyc

@@ -29,7 +29,13 @@ def test_onnx():
         x.append(X_test)
 
         pred_onx = sess.run([out_name], {input_name:x}) 
-        # print(pred_onx)
+        pred_onx = np.squeeze(pred_onx ,axis = (0,1))
+        print("pred_onx.shape = ", np.shape(pred_onx))
+        for i, bbox_num in enumerate(pred_onx):
+            print("BBox",i," =",end=' ')
+            for class_num in bbox_num:
+                print(round(class_num,3), end=', ')
+            print("\n")
 
 if __name__ == '__main__':
     test_onnx()

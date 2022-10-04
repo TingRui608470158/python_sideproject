@@ -28,6 +28,7 @@ if __name__ == '__main__':
     ##模型
     model = models.vgg16(pretrained=True)
     model.classifier.add_module("7", nn.Linear(1000, 3))
+    
     model.classifier.add_module("8", nn.Softmax(dim = 1))
     model = model.to(device)
  
