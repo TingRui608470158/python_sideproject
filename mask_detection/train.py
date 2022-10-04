@@ -7,6 +7,7 @@ import cv2
 import argparse
 import torch
 import torchvision.models as models
+import torch.nn.functional as fun
 import torch.nn as nn
 from mask_data import MaskDataset
 from torch.utils.data import Dataset,DataLoader
@@ -25,8 +26,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     ##模型
-    model = models.vgg16(pretrained=True).to(device)
-    model.classifier[6].out_features = 3
+    model = models.vgg16(pretrained=True)
+    model.classifier.add_module("7", nn.Linear(1000, 3))
+    model.classifier.add_module("8", nn.Softmax(dim = 1))
+    model = model.to(device)
+ 
     print(model)
     print(model._modules.keys())
 
@@ -44,22 +48,23 @@ if __name__ == '__main__':
     #     # one_image.show()
     #     print(dataset.im_path[i])
     #     print(max(dataset.im_label[i]))
-    batch_size = 8
+    batch_size = 1
     dataloader = DataLoader(dataset=dataset, batch_size= batch_size, shuffle=True)
     # dataiter = iter(dataloader)
     # data = dataiter.next()
     #訓練
     model.train()
-    num_epochs = 10
+    num_epochs = 3
     for epoch in range(num_epochs):
         batch_size_start = time.time()
         running_loss = 0.0
         for i, (inputs, labels) in enumerate(dataloader):
             inputs = Variable(inputs.float()).cuda()
             labels = Variable(labels).cuda()
+            # labels = Variable(fun.one_hot(labels, num_classes=3)).cuda()
             inputs = inputs.permute(0, 3, 2, 1)
             # inputs = torch.unsqueeze(inputs,dim = 0)
-            # print(i,inputs.shape)
+            # print(i,inputs.shape,"\n label = ",labels)
             optimizer.zero_grad()
             
             outputs = model((inputs).to(device))

@@ -28,17 +28,19 @@ if __name__ == '__main__':
     print(args.image_path)
     
     ##模型
-    model = models.vgg16(pretrained=True).to(device)
+    # model = models.vgg16(pretrained=True).to(device)
     
-    print(model)
-    print(model._modules.keys())
+    # print(model)
+    # print(model._modules.keys())
 
     #模型讀取
-    model.eval()
+   
     model = torch.load(args.model_path)
-    model.classifier[6].out_features = 3
+    model.eval()
     print(model)
     print("load model success")
+    for name, param in model.classifier.named_parameters():
+        print(name, param.shape)
 
     #資料集
     dataset = parse_dataset(args,"classify")
@@ -54,7 +56,7 @@ if __name__ == '__main__':
         image = torch.unsqueeze(image,dim = 0)
         output = model(image)
         print("Target is ",max(dataset.annotation_object[i]))
-        print(output[:,0:3])
+        print("Output = ",output.detach().cpu().numpy())
         
         #對三個輸出做判斷
         print(torch.max(output[:,0:3], dim = 1))
@@ -110,5 +112,7 @@ if __name__ == '__main__':
 #     (4): ReLU(inplace=True)
 #     (5): Dropout(p=0.5, inplace=False)
 #     (6): Linear(in_features=4096, out_features=1000, bias=True)
+#     (7): Linear(in_features=1000, out_features=3, bias=True)
+#     (8): Softmax(dim=0)
 #   )
 # )
